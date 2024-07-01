@@ -732,7 +732,7 @@
     <span class="k">return</span> <span class="n">vellox</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
 </code></pre></div>
 
-<p>None of the framework details are important here. The routing decorator, request parameter, and return value of the endpoint method could be anything. The <code>app</code> instance will be a valid <code>app</code> parameter for Mangum so long as the framework exposes an ASGI-compatible interface:</p>
+<p>None of the framework details are important here. The routing decorator, request parameter, and return value of the endpoint method could be anything. The <code>app</code> instance will be a valid <code>app</code> parameter for Vellox so long as the framework exposes an ASGI-compatible interface:</p>
 <div class="codehilite"><pre><span></span><code><span class="k">class</span> <span class="nc">Application</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
     <span class="k">async</span> <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scope</span><span class="p">:</span> <span class="n">Scope</span><span class="p">,</span> <span class="n">receive</span><span class="p">:</span> <span class="n">ASGIReceive</span><span class="p">,</span> <span class="n">send</span><span class="p">:</span> <span class="n">ASGISend</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="o">...</span>
@@ -852,7 +852,7 @@
 
 <h3 id="django">Django</h3>
 <p><a href="https://docs.djangoproject.com/">Django</a> is a high-level Python Web framework that encourages rapid development and clean, pragmatic design.</p>
-<p>It started introducing ASGI support in version <a href="https://docs.djangoproject.com/en/3.0/releases/3.0/#asgi-support">3.0</a>. Certain async capabilities are not yet implemented and planned for future releases, however it can still be used with Mangum and other ASGI applications at the outer application level.</p>
+<p>It started introducing ASGI support in version <a href="https://docs.djangoproject.com/en/3.0/releases/3.0/#asgi-support">3.0</a>. Certain async capabilities are not yet implemented and planned for future releases, however it can still be used with Vellox and other ASGI applications at the outer application level.</p>
 <div class="codehilite"><pre><span></span><code><span class="c1"># asgi.py</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">vellox</span> <span class="kn">import</span> <span class="n">Vellox</span>
