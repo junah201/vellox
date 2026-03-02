@@ -10,7 +10,7 @@ from typing import (
     Callable,
     Literal,
     Protocol,
-    TypedDict
+    TypedDict,
 )
 from typing_extensions import TypeAlias
 
@@ -27,8 +27,7 @@ Send: TypeAlias = Callable[[Message], Awaitable[None]]
 
 
 class ASGI(Protocol):
-    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        ...
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None: ...
 
 
 LifespanMode: TypeAlias = Literal["auto", "on", "off"]
@@ -47,22 +46,15 @@ class Config(TypedDict):
 
 
 class Handler(Protocol):
-    def __init__(self, *args: Any) -> None:
-        ...
+    def __init__(self, *args: Any) -> None: ...
 
     @classmethod
-    def infer(
-        cls, request: flask.Request, config: Config
-    ) -> bool:
-        ...
+    def infer(cls, request: flask.Request, config: Config) -> bool: ...
 
     @property
-    def body(self) -> bytes:
-        ...
+    def body(self) -> bytes: ...
 
     @property
-    def scope(self) -> Scope:
-        ...
+    def scope(self) -> Scope: ...
 
-    def __call__(self, response: Response) -> dict:
-        ...
+    def __call__(self, response: Response) -> dict: ...

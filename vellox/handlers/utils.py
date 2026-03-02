@@ -3,7 +3,7 @@ from urllib.parse import unquote
 
 import flask
 
-from vellox.types import Headers, Config
+from vellox.types import Config
 
 
 def get_server_and_port(request: flask.Request) -> Tuple[str, int]:
@@ -22,7 +22,7 @@ def strip_path(path: str, *, base_path: str) -> str:
         if not base_path.startswith("/"):
             base_path = f"/{base_path}"
         if path.startswith(base_path):
-            path = path[len(base_path):]
+            path = path[len(base_path) :]
 
     return unquote(path)
 

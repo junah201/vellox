@@ -10,27 +10,43 @@ on:
       - synchronize
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.13"
+      - name: Install tox
+        run: uv tool install tox --with tox-uv
+      - name: Lint
+        run: tox -e lint
+
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version:
-          - "3.12"
-          - "3.11"
-          - "3.10"
-          - "3.9"
-          - "3.8"
+        include:
+          - python-version: "3.13"
+            tox-env: "py313"
+          - python-version: "3.12"
+            tox-env: "py312"
+          - python-version: "3.11"
+            tox-env: "py311"
+          - python-version: "3.10"
+            tox-env: "py310"
+          - python-version: "3.9"
+            tox-env: "py39"
+          - python-version: "3.8"
+            tox-env: "py38"
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        run: |
-          pip install poetry
-          poetry install
+      - name: Install tox
+        run: uv tool install tox --with tox-uv
       - name: Test
-        run: bash scripts/test.sh
-        env:
-          CONTEXT: ${{ runner.os }}-py${{ matrix.python-version }}
+        run: tox -e ${{ matrix.tox-env }}
