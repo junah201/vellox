@@ -80,8 +80,7 @@ class HTTPCycle:
             elif self.state is not HTTPCycleState.COMPLETE:
                 self.status = 500
                 self.body = b"Internal Server Error"
-                self.headers = [
-                    [b"content-type", b"text/plain; charset=utf-8"]]
+                self.headers = [[b"content-type", b"text/plain; charset=utf-8"]]
 
     async def receive(self) -> Message:
         return await self.app_queue.get()
@@ -98,7 +97,6 @@ class HTTPCycle:
             self.state is HTTPCycleState.RESPONSE
             and message["type"] == "http.response.body"
         ):
-
             body = message.get("body", b"")
             more_body = message.get("more_body", False)
             self.buffer.write(body)

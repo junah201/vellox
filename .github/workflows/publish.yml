@@ -8,23 +8,15 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python
-        uses: actions/setup-python@v2
+      - uses: actions/checkout@v4
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
         with:
-          python-version: "3.8"
-
-      - name: Install dependencies
-        run: |
-          pip install poetry twine
-          poetry install --only main
-
+          python-version: "3.13"
       - name: Build
-        run: poetry build
-
+        run: uv build
       - name: Publish
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
-        run: |
-          twine upload dist/* --username $TWINE_USERNAME --password $TWINE_PASSWORD
+        run: uvx twine upload dist/*

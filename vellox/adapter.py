@@ -19,9 +19,7 @@ from vellox.types import (
 logger = logging.getLogger("vellox")
 
 
-HANDLERS: List[Type[Handler]] = [
-    GCP
-]
+HANDLERS: List[Type[Handler]] = [GCP]
 
 DEFAULT_TEXT_MIME_TYPES: List[str] = [
     "text/",

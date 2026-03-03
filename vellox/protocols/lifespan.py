@@ -4,8 +4,8 @@ import logging
 from types import TracebackType
 from typing import Optional, Type
 
+from vellox.exceptions import LifespanFailure, LifespanUnsupported, UnexpectedMessage
 from vellox.types import ASGI, LifespanMode, Message
-from vellox.exceptions import LifespanUnsupported, LifespanFailure, UnexpectedMessage
 
 
 class LifespanCycleState(enum.Enum):
@@ -57,7 +57,11 @@ class LifespanCycle:
         self.lifespan = lifespan
         self.state: LifespanCycleState = LifespanCycleState.CONNECTING
         self.exception: Optional[BaseException] = None
-        self.loop = asyncio.get_event_loop()
+        try:
+            self.loop = asyncio.get_running_loop()
+        except RuntimeError:
+            self.loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(self.loop)
         self.app_queue: asyncio.Queue[Message] = asyncio.Queue()
         self.startup_event: asyncio.Event = asyncio.Event()
         self.shutdown_event: asyncio.Event = asyncio.Event()
@@ -81,8 +85,7 @@ class LifespanCycle:
         """Calls the application with the `lifespan` connection scope."""
         try:
             await self.app(
-                {"type": "lifespan", "asgi": {
-                    "spec_version": "2.0", "version": "3.0"}},
+                {"type": "lifespan", "asgi": {"spec_version": "2.0", "version": "3.0"}},
                 self.receive,
                 self.send,
             )
@@ -91,8 +94,7 @@ class LifespanCycle:
         except (LifespanFailure, UnexpectedMessage) as exc:
             self.exception = exc
         except BaseException as exc:
-            self.logger.error(
-                "Exception in 'lifespan' protocol.", exc_info=exc)
+            self.logger.error("Exception in 'lifespan' protocol.", exc_info=exc)
         finally:
             self.startup_event.set()
             self.shutdown_event.set()
@@ -100,14 +102,12 @@ class LifespanCycle:
     async def receive(self) -> Message:
         """Awaited by the application to receive ASGI `lifespan` events."""
         if self.state is LifespanCycleState.CONNECTING:
-
             # Connection established. The next event returned by the queue will be
             # `lifespan.startup` to inform the application that the connection is
             # ready to receive lfiespan messages.
             self.state = LifespanCycleState.STARTUP
 
         elif self.state is LifespanCycleState.STARTUP:
-
             # Connection shutting down. The next event returned by the queue will be
             # `lifespan.shutdown` to inform the application that the connection is now
             # closing so that it may perform cleanup.
@@ -140,8 +140,7 @@ class LifespanCycle:
             "lifespan.shutdown.failed",
         ):
             self.state = LifespanCycleState.FAILED
-            raise UnexpectedMessage(
-                f"Unexpected '{message_type}' event received.")
+            raise UnexpectedMessage(f"Unexpected '{message_type}' event received.")
 
         if self.state is LifespanCycleState.STARTUP:
             if message_type == "lifespan.startup.complete":
@@ -150,8 +149,7 @@ class LifespanCycle:
                 self.state = LifespanCycleState.FAILED
                 self.startup_event.set()
                 message_value = message.get("message", "")
-                raise LifespanFailure(
-                    f"Lifespan startup failure. {message_value}")
+                raise LifespanFailure(f"Lifespan startup failure. {message_value}")
 
         elif self.state is LifespanCycleState.SHUTDOWN:
             if message_type == "lifespan.shutdown.complete":
@@ -160,8 +158,7 @@ class LifespanCycle:
                 self.state = LifespanCycleState.FAILED
                 self.shutdown_event.set()
                 message_value = message.get("message", "")
-                raise LifespanFailure(
-                    f"Lifespan shutdown failure. {message_value}")
+                raise LifespanFailure(f"Lifespan shutdown failure. {message_value}")
 
     async def startup(self) -> None:
         """Pushes the `lifespan` startup event to the queue and handles errors."""
