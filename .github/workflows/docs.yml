@@ -11,24 +11,23 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v2
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
         with:
-          python-version: 3.8
+          python-version: "3.13"
+          enable-cache: true
 
       - name: Install dependencies
-        run: |
-          pip install poetry
-          poetry install --with=docs
+        run: uv sync --extra docs
 
       - name: Build
-        run: poetry run mkdocs build
+        run: uv run mkdocs build
 
       - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          personal_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./site
           cname: vellox.junah.dev
