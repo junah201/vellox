@@ -19,6 +19,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Set up uv
         uses: astral-sh/setup-uv@v5
+        with:
+          cache-dependency-glob: "pyproject.toml"
       - name: Install tox
         run: uv tool install tox --with tox-uv
       - name: Get tox environments
@@ -37,6 +39,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Set up uv
         uses: astral-sh/setup-uv@v5
+        with:
+          cache-dependency-glob: "pyproject.toml"
       - name: Install tox
         run: uv tool install tox --with tox-uv
       - name: Test
