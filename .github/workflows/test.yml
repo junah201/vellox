@@ -10,43 +10,35 @@ on:
       - synchronize
 
 jobs:
-  lint:
+  generate-matrix:
     runs-on: ubuntu-latest
+    outputs:
+      tox-envs: ${{ steps.set-envs.outputs.tox-envs }}
     steps:
       - uses: actions/checkout@v4
       - name: Set up uv
         uses: astral-sh/setup-uv@v5
-        with:
-          python-version: "3.13"
       - name: Install tox
         run: uv tool install tox --with tox-uv
-      - name: Lint
-        run: tox -e lint
+      - name: Get tox environments
+        id: set-envs
+        run: |
+          ENVS=$(tox -l | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          echo "tox-envs=$ENVS" >> $GITHUB_OUTPUT
 
   test:
+    needs: generate-matrix
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        include:
-          - python-version: "3.13"
-            tox-env: "py313"
-          - python-version: "3.12"
-            tox-env: "py312"
-          - python-version: "3.11"
-            tox-env: "py311"
-          - python-version: "3.10"
-            tox-env: "py310"
-          - python-version: "3.9"
-            tox-env: "py39"
-          - python-version: "3.8"
-            tox-env: "py38"
+        tox-env: ${{ fromJson(needs.generate-matrix.outputs.tox-envs) }}
     steps:
       - uses: actions/checkout@v4
       - name: Set up uv
         uses: astral-sh/setup-uv@v5
-        with:
-          python-version: ${{ matrix.python-version }}
       - name: Install tox
         run: uv tool install tox --with tox-uv
       - name: Test
         run: tox -e ${{ matrix.tox-env }}
+        env:
+          UV_PYTHON_DOWNLOADS: auto
